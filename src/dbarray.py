@@ -11,7 +11,7 @@
   Created on: Sun Mar 23 15:23:27 2014 CST
 """
 DESCRIPTION = """
-This is main interface of DBArray.
+DBArray class.
 """
 
 import os
@@ -90,8 +90,20 @@ class DBArray(object):
         self.dtype = eval('np.' + self.storage.get('dtype'))
 
     @classmethod
-    def parse_key(cls, key, stop):
-        """ parse key
+    def parse_key(cls, key, stop=0):
+        """ Parse the provided key.
+
+        Parameters
+        ----------
+            key: integer or slice
+                Valide key can be of type `int`, `long` or `slice`.
+            stop: integer
+                Upper bound of the keys.
+
+        Returns
+        -------
+            keylist: list or None
+                list of valid keys induced from key.
         """
         if type(key) in [int, long]:
             return [key]
@@ -108,26 +120,42 @@ class DBArray(object):
         return self.nrows
 
     def __getitem__(self, key):
-        """ get values
+        """ Get values from DB.
+
+        Parameters
+        ----------
+            key: integer, slice or tuple
+                Valide key can be of type `int`, `long` or `slice`
+                or tuple of the previous types.
+
+        Returns
+        -------
+            subarray: numpy.ndarray
+                rows and cols specified by key
         """
         v_rid = None
         v_cid = None
         if type(key) is not tuple:
+            # get rows
             v_rid = self.parse_key(key, self.nrows)
             if None == v_rid:
                 perr("Error: key must be a tuple or integer\n")
                 return None
         else:
             if len(key) == 0:
+                # bad key
                 perr("Error: invalid syntax\n")
                 return None
             elif len(key) > 2:
+                # bad key
                 perr("Error: too many indices\n")
                 return None
             elif len(key) == 1:
+                # get rows
                 v_rid = self.parse_key(key[0], self.nrows)
                 v_cid = None
             elif len(key) == 2:
+                # get rows and then select cols
                 v_rid = self.parse_key(key[0], self.nrows)
                 v_cid = self.parse_key(key[1], self.ncols)
 
@@ -137,7 +165,7 @@ class DBArray(object):
         return rows
 
     def get_rows(self, v_rid):
-        """ Get a row
+        """ Get rows from DB
         """
         nrows = len(v_rid)
         resarr = np.ndarray((nrows, self.ncols), self.dtype)
@@ -146,7 +174,7 @@ class DBArray(object):
         return resarr
 
     def set_rows(self, v_rid, arr):
-        """ Get a row
+        """ Set rows of DB
         """
         nrows = len(v_rid)
         for i in range(nrows):
@@ -159,14 +187,18 @@ class DBArray(object):
                           self.storage.get(struct.pack(PACK_NUM_TYPE, rid)))
 
     def set_row(self, rid, arr):
-        """ Get a row
+        """ Set a row
         """
         self.storage.set(struct.pack(PACK_NUM_TYPE, rid), arr.data)
 
     def __del__(self):
         """ Destroy
         """
-        print "Destroy"
+        pass
+
+    ################################################################
+    #
+    ################################################################
 
     @classmethod
     def fromndarray(cls, arr, dbpath):
