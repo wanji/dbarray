@@ -139,6 +139,8 @@ class DBArray(object):
             return range(0 if key.start is None else key.start,
                          stop if key.stop is None else key.stop,
                          1 if key.step is None else key.step)
+        elif type(key) is list:
+            return key
         else:
             return None
 
