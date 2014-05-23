@@ -31,6 +31,7 @@ DBTYPE = {
 PACK_NUM_TYPE = 'q'
 TSTR_NDARRAY  = 'nda'
 TSTR_INT      = 'int'
+TSTR_STR      = 'str'
 TSTR_LEN      = len(TSTR_INT)
 
 def perr(msg):
@@ -78,29 +79,43 @@ class DBArray(object):
         self.storage.set('nrows', struct.pack(PACK_NUM_TYPE, shape[0]))
         self.storage.set('ncols', struct.pack(PACK_NUM_TYPE, shape[1]))
 
+    @classmethod
+    def get_dtype_name(cls, dtype):
+        """ Get the name of data type
+        """
+        if dtype is None:
+            return 'None'
+        elif type(dtype) is type:
+            return dtype.__name__
+        elif type(dtype) is np.dtype:
+            return str(dtype)
+        elif type(dtype) is str:
+            return str
+        else:
+            raise Exception('Unrecognized data type: %s' % str(dtype))
+
+    @classmethod
+    def gen_dtype(cls, dtype_str):
+        """ Generate dtype from name
+        """
+        if dtype_str == 'None':
+            return None
+        else:
+            return eval('np.' + dtype_str)
+
     def set_dtype(self, dtype):
         """ Set shape of DBArray
         """
-        self.dtype = dtype
-        if dtype is None:
-            self.storage.set('dtype', 'None')
-        elif type(dtype) is type:
-            self.storage.set('dtype', dtype.__name__)
-        elif type(dtype) is str:
-            self.storage.set('dtype', dtype)
-        else:
-            raise Exception('Unrecognized data type: %s' % str(dtype))
+        dtype_str = self.get_dtype_name(dtype)
+        self.dtype = self.gen_dtype(dtype_str)
+        self.storage.set('dtype', dtype_str)
 
     def loadinfo(self):
         """ Load information from DB
         """
         self.nrows = struct.unpack(PACK_NUM_TYPE, self.storage.get('nrows'))[0]
         self.ncols = struct.unpack(PACK_NUM_TYPE, self.storage.get('ncols'))[0]
-        raw_dtype = self.storage.get('dtype')
-        if raw_dtype == 'None':
-            self.dtype = None
-        else:
-            self.dtype = eval('np.' + raw_dtype)
+        self.dtype = self.gen_dtype(self.storage.get('dtype'))
 
     @classmethod
     def parse_key(cls, key, stop=0):
@@ -209,11 +224,15 @@ class DBArray(object):
         Set attribute
         """
         if type(val) is np.ndarray:
+            dtype_str = self.get_dtype_name(val.dtype)
+            self.set_db_attr(key + "_dtype", dtype_str)
             return self.storage.set(key, TSTR_NDARRAY +
                                     val.tostring())
         elif type(val) is int:
             return self.storage.set(key, TSTR_INT +
                                     struct.pack(PACK_NUM_TYPE, val))
+        elif type(val) is str:
+            return self.storage.set(key, TSTR_STR + val)
         else:
             raise('Unsupported attribute type: %s' % str(type(val)))
 
@@ -223,10 +242,15 @@ class DBArray(object):
         """
         rawval = self.storage.get(key)
         if rawval[:len(TSTR_NDARRAY)] == TSTR_NDARRAY:
-            return np.fromstring(rawval[len(TSTR_NDARRAY):])
+            attr_dtype = self.gen_dtype(
+                self.get_db_attr(key + "_dtype"))
+            return np.fromstring(rawval[len(TSTR_NDARRAY):],
+                                 dtype=attr_dtype)
         elif rawval[:len(TSTR_INT)] == TSTR_INT:
             return struct.unpack(PACK_NUM_TYPE,
                                  rawval[len(TSTR_INT):])[0]
+        elif rawval[:len(TSTR_STR)] == TSTR_STR:
+            return rawval[len(TSTR_STR):]
         else:
             raise('Unknown attribute type: %s' % rawval[:8])
 
