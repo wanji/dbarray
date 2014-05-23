@@ -43,7 +43,7 @@ class StorageLevelDB(Storage):
 
     def __init__(self, dbpath):
         Storage.__init__(self)
-        self.hl_db = leveldb.LevelDB(dbpath)
+        self.hl_db = leveldb.LevelDB(dbpath, write_buffer_size=2**30)
 
     def __del__(self):
         del self.hl_db

@@ -80,7 +80,14 @@ class DBArray(object):
         """ Set shape of DBArray
         """
         self.dtype = dtype
-        self.storage.set('dtype', str(dtype))
+        if dtype is None:
+            self.storage.set('dtype', 'None')
+        elif type(dtype) is type:
+            self.storage.set('dtype', dtype.__name__)
+        elif type(dtype) is str:
+            self.storage.set('dtype', dtype)
+        else:
+            raise Exception('Unrecognized data type: %s' % str(dtype))
 
     def loadinfo(self):
         """ Load information from DB
