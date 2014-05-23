@@ -29,7 +29,9 @@ DBTYPE = {
 
 # storing the number in `long long` type
 PACK_NUM_TYPE = 'q'
-
+TSTR_NDARRAY  = 'nda'
+TSTR_INT      = 'int'
+TSTR_LEN      = len(TSTR_INT)
 
 def perr(msg):
     """ Print error message.
@@ -94,7 +96,11 @@ class DBArray(object):
         """
         self.nrows = struct.unpack(PACK_NUM_TYPE, self.storage.get('nrows'))[0]
         self.ncols = struct.unpack(PACK_NUM_TYPE, self.storage.get('ncols'))[0]
-        self.dtype = eval('np.' + self.storage.get('dtype'))
+        raw_dtype = self.storage.get('dtype')
+        if raw_dtype == 'None':
+            self.dtype = None
+        else:
+            self.dtype = eval('np.' + raw_dtype)
 
     @classmethod
     def parse_key(cls, key, stop=0):
@@ -196,7 +202,33 @@ class DBArray(object):
     def set_row(self, rid, arr):
         """ Set a row
         """
-        self.storage.set(struct.pack(PACK_NUM_TYPE, rid), arr.data)
+        return self.storage.set(struct.pack(PACK_NUM_TYPE, rid), arr.data)
+
+    def set_db_attr(self, key, val):
+        """
+        Set attribute
+        """
+        if type(val) is np.ndarray:
+            return self.storage.set(key, TSTR_NDARRAY +
+                                    val.tostring())
+        elif type(val) is int:
+            return self.storage.set(key, TSTR_INT +
+                                    struct.pack(PACK_NUM_TYPE, val))
+        else:
+            raise('Unsupported attribute type: %s' % str(type(val)))
+
+    def get_db_attr(self, key):
+        """
+        Set attribute
+        """
+        rawval = self.storage.get(key)
+        if rawval[:len(TSTR_NDARRAY)] == TSTR_NDARRAY:
+            return np.fromstring(rawval[len(TSTR_NDARRAY):])
+        elif rawval[:len(TSTR_INT)] == TSTR_INT:
+            return struct.unpack(PACK_NUM_TYPE,
+                                 rawval[len(TSTR_INT):])[0]
+        else:
+            raise('Unknown attribute type: %s' % rawval[:8])
 
     def __del__(self):
         """ Destroy
