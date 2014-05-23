@@ -136,7 +136,7 @@ class DBArray(object):
         if type(key) in [int, long]:
             return [key]
         elif type(key) is slice:
-            return range(0 if key.start is None else 0,
+            return range(0 if key.start is None else key.start,
                          stop if key.stop is None else key.stop,
                          1 if key.step is None else key.step)
         else:
