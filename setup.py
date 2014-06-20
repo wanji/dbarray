@@ -14,14 +14,13 @@ except ImportError:
     from distutils.core import setup
 
 setup(name='dbarray',
-      version='0.0.2',
+      version='0.1',
       author='WAN Ji',
       author_email='wanji@live.com',
       package_dir={'dbarray': 'src'},
       packages=['dbarray'],
-      #scripts=['bin/bench.py', 'bin/dsinit.py'],
       url='http://pypi.python.org/pypi/dbarray/',
-      #license='LICENSE.txt',
+      license='LICENSE.txt',
       description='.',
       long_description=open('README.md').read(),
       install_requires=[
