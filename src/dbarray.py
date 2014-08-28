@@ -11,7 +11,7 @@
   Created on: Sun Mar 23 15:23:27 2014 CST
 """
 DESCRIPTION = """
-DBArray class.
+Array stored in DB.
 """
 
 import os
@@ -29,10 +29,11 @@ DBTYPE = {
 
 # storing the number in `long long` type
 PACK_NUM_TYPE = 'q'
-TSTR_NDARRAY  = 'nda'
-TSTR_INT      = 'int'
-TSTR_STR      = 'str'
-TSTR_LEN      = len(TSTR_INT)
+TSTR_NDARRAY = 'nda'
+TSTR_INT = 'int'
+TSTR_STR = 'str'
+TSTR_LEN = len(TSTR_INT)
+
 
 def perr(msg):
     """ Print error message.
