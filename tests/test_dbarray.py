@@ -74,7 +74,7 @@ class CommTestDBArray(object):
         return dba
 
     def test_init(self):
-        dbpath = os.path.join(self.tempdir, 'test_init.db')
+        dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_init.db')
         nrows = 100
         ncols = 1024
         dtype = 'float32'
@@ -90,7 +90,7 @@ class CommTestDBArray(object):
 
     def test_from_and_to(self):
         for key, val in self.commdbs.iteritems():
-            dbpath = os.path.join(self.tempdir, 'test_from_%s.db' % key)
+            dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_from_%s.db' % key)
             dba = DBArray.fromndarray(val, dbpath, self.DBTYPE)
             self._info_eq(dba, val)
 
@@ -107,7 +107,7 @@ class CommTestDBArray(object):
 
     def test_get_data(self):
         for key, val in self.commdbs.iteritems():
-            dbpath = os.path.join(self.tempdir, 'test_get_data_%s.db' % key)
+            dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_get_data_%s.db' % key)
             dba = DBArray.fromndarray(val, dbpath, self.DBTYPE)
             self._arr_eq(dba[10], val[10])
             self._arr_eq(dba[10, :], val[10, :])
@@ -118,7 +118,7 @@ class CommTestDBArray(object):
 
     def test_set_data(self):
         for key, val in self.commdbs.iteritems():
-            dbpath = os.path.join(self.tempdir, 'test_set_data_%s.db' % key)
+            dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_set_data_%s.db' % key)
             dba = self._create_dba(dbpath, val.shape, val.dtype)
 
             # set rows of
@@ -139,7 +139,7 @@ class CommTestDBArray(object):
         """ Set/Get attributes.
         """
         for key, val in self.commdbs.iteritems():
-            dbpath = os.path.join(self.tempdir, 'test_attr_%s.db' % key)
+            dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_attr_%s.db' % key)
             dba = DBArray.fromndarray(val, dbpath, self.DBTYPE)
             data_mean = val.mean(0)
             int_attr = np.random.randint(100)
@@ -166,7 +166,7 @@ class CommTestDBArray(object):
 
     def test_set_attr(self):
         for key, val in self.commdbs.iteritems():
-            dbpath = os.path.join(self.tempdir, 'test_set_attr_%s.db' % key)
+            dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_set_attr_%s.db' % key)
             dba = self._create_dba(dbpath, val.shape, val.dtype)
 
             # set rows of
@@ -183,7 +183,9 @@ class CommTestDBArray(object):
             arr = dba.tondarray()
             self._arr_eq(arr, val)
 
+
 class TestDBArray_LevelDB(unittest.TestCase, CommTestDBArray):
+#class TestDBArray_LevelDB(CommTestDBArray):
     DBTYPE = 'leveldb'
 
     @classmethod
@@ -197,14 +199,16 @@ class TestDBArray_LevelDB(unittest.TestCase, CommTestDBArray):
             'int64':   np.require(nr.random(shape) * 100, np.int64),
             'int32':   np.require(nr.random(shape) * 100, np.int32),
         }
+        os.system('mkdir %s' % os.path.join(cls.tempdir, cls.DBTYPE))
 
     @classmethod
     def tearDownClass(cls):
         os.system('rm -r %s' % cls.tempdir)
 
-"""
+
 class TestDBArray_LMDB(unittest.TestCase, CommTestDBArray):
-    DBTYPE = 'leveldb'
+#class TestDBArray_LMDB(CommTestDBArray):
+    DBTYPE = 'lmdb'
 
     @classmethod
     def setUpClass(cls):
@@ -217,11 +221,11 @@ class TestDBArray_LMDB(unittest.TestCase, CommTestDBArray):
             'int64':   np.require(nr.random(shape) * 100, np.int64),
             'int32':   np.require(nr.random(shape) * 100, np.int32),
         }
+        os.system('mkdir %s' % os.path.join(cls.tempdir, cls.DBTYPE))
 
     @classmethod
     def tearDownClass(cls):
         os.system('rm -r %s' % cls.tempdir)
-"""
 
 
 if __name__ == '__main__':

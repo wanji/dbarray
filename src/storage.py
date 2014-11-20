@@ -15,6 +15,7 @@ The backend storage engine of DBArray
 """
 
 import leveldb
+import lmdb
 
 
 class Storage(object):
@@ -63,22 +64,24 @@ class StorageLMDB(Storage):
     """ Storage using LevelDB as backend.
     """
 
-    def __init__(self, dbpath):
+    def __init__(self, dbpath, map_size=2**40):
         Storage.__init__(self)
-        self.hl_db = leveldb.LevelDB(dbpath, write_buffer_size=2**30)
+        self.env = lmdb.open(dbpath, map_size=map_size, sync=False)
 
     def __del__(self):
-        del self.hl_db
+        del self.env
 
     def set(self, key, val):
         """ Set `key` to `val`
         """
-        self.hl_db.Put(key, val)
+        with self.env.begin(write=True) as txt:
+            txt.put(key, val)
 
     def get(self, key):
         """ Get value of `key`
         """
-        return self.hl_db.Get(key)
+        with self.env.begin() as txt:
+            return txt.get(key)
 
 
 class StorageRedis(Storage):
