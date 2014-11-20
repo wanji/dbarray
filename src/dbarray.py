@@ -60,11 +60,10 @@ class DBArray(object):
         """ Initialize the `DBArray`
 
         Args:
-            `dbpath`    [str]   path of the database
-            `dbtype`    [str]   type of the database
+            `dbpath`    [str]   path of the database.
+            `dbtype`    [str]   type of the database.
 
-        Returns:
-            N/A
+        Returns: N/A
         """
 
         ## Number of rows in the array
@@ -113,11 +112,9 @@ class DBArray(object):
     def __del__(self):
         """ Destroy the `DBArray`
 
-        Args:
-            N/A
+        Args: N/A
 
-        Returns:
-            N/A
+        Returns: N/A
         """
         pass
 
@@ -131,12 +128,12 @@ class DBArray(object):
 
         Args:
             `key`   [str, integer, slice or tuple]
-                Valide key can be of type `int`, `long` or `slice`
-                or tuple of the previous types.
+                An `key` of type `str` corresponds to an attribute.
+                Other kinds of `key`s correspond to array indices.
 
         Returns:
-            `subarray`  [numpy.ndarray]
-                rows and cols specified by key
+            `attr`      [str, int or numpy.ndarray] for `key` of type `str`.
+            `subarray`  [numpy.ndarray] for `key` of other types.
         """
         if type(key) is str:
             return self.get_db_attr(key)
@@ -157,13 +154,14 @@ class DBArray(object):
         """ Set a subarray in DB.
 
         Args:
-            `key`   [integer, slice or tuple]
-                Valide key can be of type `int`, `long` or `slice`
-                or tuple of the previous types.
+            `key`   [str, integer, slice or tuple]
+                An `key` of type `str` corresponds to an attribute.
+                Other kinds of `key`s correspond to array indices.
+            `val`
+                [str, int or numpy.ndarray] for `key` of type `str`.
+                [numpy.ndarray] for `key` of other types.
 
-        Returns:
-            `subarray`  [numpy.ndarray]
-                rows and cols specified by key
+        Returns: N/A
         """
         if type(key) is str:
             return self.set_db_attr(key, val)
@@ -189,20 +187,26 @@ class DBArray(object):
             self.set_rows(v_rid, rows)
 
     def set_shape(self, shape):
-        """ Set shape of DBArray
+        """ Set shape of `DBArray`.
+
+        Args:
+            `shape` [tuple of int: (nrows, ncols)]
+                Specify number of rows and cols of `DBArray`.
+
+        Returns: N/A
         """
         (self.nrows, self.ncols) = shape
         self._storage.set('nrows', pack(PACK_NUM_TYPE, shape[0]))
         self._storage.set('ncols', pack(PACK_NUM_TYPE, shape[1]))
 
     def set_dtype(self, dtype):
-        """ Set dtype of DBArray.
+        """ Set dtype of `DBArray`.
 
         Args:
             `dtype` [str or numpy.dtype]
+                Can be any valid numpy.dtype.
 
-        Returns:
-            N/A
+        Returns: N/A
         """
         dtype_str = self._get_dtype_name(dtype)
         self.dtype = self._gen_dtype(dtype_str)
@@ -212,12 +216,12 @@ class DBArray(object):
         """ Get rows from DB.
 
         Args:
-            `v_rid` [list]
-                A list of row Ids
+            `v_rid` [list of int]
+                A list of row Ids.
 
         Returns:
             `subarray`  [numpy.ndarray]
-                rows specified by `v_rid`
+                rows specified by `v_rid`.
         """
         nrows = len(v_rid)
         resarr = np.ndarray((nrows, self.ncols), self.dtype)
@@ -229,13 +233,12 @@ class DBArray(object):
         """ Set rows of DB
 
         Args:
-            `v_rid` [list]
-                A list of row Ids
+            `v_rid` [list of int]
+                A list of row Ids.
             `arr`   [numpy.ndarray]
-                rows specified by `v_rid`
+                Rows specified by `v_rid`.
 
-        Returns:
-            N/A
+        Returns: N/A
         """
         nrows = len(v_rid)
         for i in range(nrows):
@@ -245,12 +248,10 @@ class DBArray(object):
         """ Get a row.
 
         Args:
-            `rid` [int]
-                A row Id
+            `rid`       [int]           A single row Id.
 
         Returns:
-            `subarray`  [numpy.ndarray]
-                row vector specified by `rid`
+            `subarray`  [numpy.ndarray] Row vector specified by `rid`.
         """
         return np.ndarray(self.ncols, self.dtype,
                           self._storage.get(pack(PACK_NUM_TYPE, rid)))
@@ -259,13 +260,10 @@ class DBArray(object):
         """ Set a row
 
         Args:
-            `rid`   [int]
-                A row Id
-            `arr`   [numpy.ndarray]
-                row vector specified by `rid`
+            `rid`   [int]           A single row Id.
+            `arr`   [numpy.ndarray] Row vector specified by `rid`.
 
-        Returns:
-            N/A
+        Returns: N/A
         """
         return self._storage.set(pack(PACK_NUM_TYPE, rid), arr.data)
 
@@ -273,8 +271,7 @@ class DBArray(object):
         """ Set DB attribute.
 
         Args:
-            `key`   [str]
-                Name of the attribute.
+            `key`   [str]   Name of the attribute.
             `val`   [str, int or 1-row numpy.ndarray]
                 Value of the attribute.
                 The following attribute type are supported:
@@ -282,8 +279,7 @@ class DBArray(object):
                     'int': int
                     'str': string
 
-        Returns:
-            N/A
+        Returns: N/A
         """
         if type(val) is np.ndarray:
             dtype_str = self._get_dtype_name(val.dtype)
@@ -332,9 +328,9 @@ class DBArray(object):
         """ Construct `DBArray` from `ndarray`.
 
         Args:
-            `arr`       [numpy.ndarray]
-            `dbpath`    [str]   path of the database
-            `dbtype`    [str]   type of the database
+            `arr`       [numpy.ndarray] The source `ndarray`.
+            `dbpath`    [str]   Path of the database.
+            `dbtype`    [str]   Type of the database.
 
         Returns:
             `dba`       [DBArray]
@@ -349,11 +345,10 @@ class DBArray(object):
     def tondarray(self):
         """ Load data to `ndarray` from `DBArray`.
 
-        Args:
-            N/A
+        Args: N/A
 
         Returns:
-            `arr`       [numpy.ndarray]
+            `arr`   [numpy.ndarray]
         """
         return self.get_rows(range(self.nrows))
 
