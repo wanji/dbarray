@@ -94,7 +94,8 @@ class StorageLMDB(Storage):
         """ Get value of `key`
         """
         with self.env.begin() as txt:
-            return txt.get(key)
+            val = txt.get(key)
+        return val
 
     @classmethod
     def is_valid(cls, dbpath):
