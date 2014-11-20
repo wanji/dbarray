@@ -27,6 +27,7 @@ DBTYPE = {
     "lmdb":     storage.StorageLMDB,
     # "redis":    storage.StorageRedis,
 }
+DEFAULT_DTYPE = 'lmdb'
 
 # storing the number in `long long` type
 PACK_NUM_TYPE_u8 = 'B'
@@ -55,7 +56,7 @@ class DBArray(object):
     array. (The data-type is compact with `numpy`)
     """
 
-    def __init__(self, dbpath, dbtype='leveldb'):
+    def __init__(self, dbpath, dbtype=DEFAULT_DTYPE):
         """ Initialize the `DBArray`
 
         Args:
@@ -76,7 +77,31 @@ class DBArray(object):
 
         is_exists = os.path.exists(dbpath)
 
-        self._storage = DBTYPE[dbtype](dbpath)
+        C_Storage = DBTYPE[dbtype]
+        # `dbpath` exists but is not `dbtype`
+        if is_exists and not C_Storage.is_valid(dbpath):
+            logging.warning('`%s` exists but is not `%s`' % (dbpath, dbtype))
+            hit_cnt = 0
+            for othertype in DBTYPE.keys():
+                if othertype == dbtype:
+                    continue
+                logging.warning('TRY type: %s' % othertype)
+                C_Storage = DBTYPE[othertype]
+                if C_Storage.is_valid(dbpath):
+                    logging.warning('HIT! %s' % othertype)
+                    hit_cnt += 1
+            if hit_cnt == 0:
+                logging.fatal(
+                    '`%s` exists but the DB type is unknown!' % dbpath)
+            elif hit_cnt > 1:
+                logging.fatal(
+                    '`%s` exists but matches too many DB types: %d!' %
+                    dbpath, hit_cnt)
+            else:
+                logging.warning(
+                    'Using `%s` instead of `%s`' % (othertype, dbtype))
+
+        self._storage = C_Storage(dbpath)
 
         # load information from existing DB
         if is_exists:
@@ -303,7 +328,7 @@ class DBArray(object):
             raise('Unknown attribute type: %s' % rawval[:8])
 
     @classmethod
-    def fromndarray(cls, arr, dbpath, dbtype='leveldb'):
+    def fromndarray(cls, arr, dbpath, dbtype=DEFAULT_DTYPE):
         """ Construct `DBArray` from `ndarray`.
 
         Args:

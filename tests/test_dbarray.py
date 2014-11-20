@@ -23,6 +23,7 @@ import numpy as np
 import numpy.random as nr
 from dbarray import DBArray
 
+
 class CommTestDBArray(object):
     def setUp(self):
         pass
@@ -90,7 +91,8 @@ class CommTestDBArray(object):
 
     def test_from_and_to(self):
         for key, val in self.commdbs.iteritems():
-            dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_from_%s.db' % key)
+            dbpath = os.path.join(self.tempdir, self.DBTYPE,
+                                  'test_from_%s.db' % key)
             dba = DBArray.fromndarray(val, dbpath, self.DBTYPE)
             self._info_eq(dba, val)
 
@@ -107,7 +109,8 @@ class CommTestDBArray(object):
 
     def test_get_data(self):
         for key, val in self.commdbs.iteritems():
-            dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_get_data_%s.db' % key)
+            dbpath = os.path.join(self.tempdir, self.DBTYPE,
+                                  'test_get_data_%s.db' % key)
             dba = DBArray.fromndarray(val, dbpath, self.DBTYPE)
             self._arr_eq(dba[10], val[10])
             self._arr_eq(dba[10, :], val[10, :])
@@ -118,7 +121,8 @@ class CommTestDBArray(object):
 
     def test_set_data(self):
         for key, val in self.commdbs.iteritems():
-            dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_set_data_%s.db' % key)
+            dbpath = os.path.join(self.tempdir, self.DBTYPE,
+                                  'test_set_data_%s.db' % key)
             dba = self._create_dba(dbpath, val.shape, val.dtype)
 
             # set rows of
@@ -139,7 +143,8 @@ class CommTestDBArray(object):
         """ Set/Get attributes.
         """
         for key, val in self.commdbs.iteritems():
-            dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_attr_%s.db' % key)
+            dbpath = os.path.join(self.tempdir, self.DBTYPE,
+                                  'test_attr_%s.db' % key)
             dba = DBArray.fromndarray(val, dbpath, self.DBTYPE)
             data_mean = val.mean(0)
             int_attr = np.random.randint(100)
@@ -150,7 +155,8 @@ class CommTestDBArray(object):
             dba['int_attr'] = int_attr
             dba['str_attr'] = str_attr
             # float is not support currently
-            self.assertRaises(TypeError, dba.__setitem__, ('flt_attr', flt_attr))
+            self.assertRaises(TypeError, dba.__setitem__,
+                              ('flt_attr', flt_attr))
 
             self._arr_eq(dba['data_mean'], data_mean)
             self.assertEqual(dba['int_attr'], int_attr)
@@ -163,10 +169,10 @@ class CommTestDBArray(object):
             self.assertEqual(dba['int_attr'], int_attr)
             self.assertEqual(dba['str_attr'], str_attr)
 
-
     def test_set_attr(self):
         for key, val in self.commdbs.iteritems():
-            dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_set_attr_%s.db' % key)
+            dbpath = os.path.join(self.tempdir, self.DBTYPE,
+                                  'test_set_attr_%s.db' % key)
             dba = self._create_dba(dbpath, val.shape, val.dtype)
 
             # set rows of
@@ -185,7 +191,6 @@ class CommTestDBArray(object):
 
 
 class TestDBArray_LevelDB(unittest.TestCase, CommTestDBArray):
-#class TestDBArray_LevelDB(CommTestDBArray):
     DBTYPE = 'leveldb'
 
     @classmethod
@@ -207,7 +212,6 @@ class TestDBArray_LevelDB(unittest.TestCase, CommTestDBArray):
 
 
 class TestDBArray_LMDB(unittest.TestCase, CommTestDBArray):
-#class TestDBArray_LMDB(CommTestDBArray):
     DBTYPE = 'lmdb'
 
     @classmethod

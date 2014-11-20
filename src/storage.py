@@ -14,6 +14,7 @@ DESCRIPTION = """
 The backend storage engine of DBArray
 """
 
+import os
 import leveldb
 import lmdb
 
@@ -37,6 +38,11 @@ class Storage(object):
         raise Exception('Unimplemented method in %s: get(%s)' %
                         self.__class__.__name__, str(key))
 
+    @classmethod
+    def is_valid(cls, dbpath):
+        raise Exception('Unimplemented method in %s: is_valid(%s)' %
+                        cls.__name__, str(dbpath))
+
 
 class StorageLevelDB(Storage):
     """ Storage using LevelDB as backend.
@@ -58,6 +64,13 @@ class StorageLevelDB(Storage):
         """ Get value of `key`
         """
         return self.hl_db.Get(key)
+
+    @classmethod
+    def is_valid(cls, dbpath):
+        for item in os.listdir(dbpath):
+            if item == 'CURRENT':
+                return True
+        return False
 
 
 class StorageLMDB(Storage):
@@ -82,6 +95,13 @@ class StorageLMDB(Storage):
         """
         with self.env.begin() as txt:
             return txt.get(key)
+
+    @classmethod
+    def is_valid(cls, dbpath):
+        for item in os.listdir(dbpath):
+            if item.endswith('.mdb'):
+                return True
+        return False
 
 
 class StorageRedis(Storage):
