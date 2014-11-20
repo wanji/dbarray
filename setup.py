@@ -14,7 +14,7 @@ except ImportError:
     from distutils.core import setup
 
 setup(name='dbarray',
-      version='0.1.1',
+      version='0.1.2',
       author='WAN Ji',
       author_email='wanji@live.com',
       package_dir={'dbarray': 'src'},
@@ -24,7 +24,8 @@ setup(name='dbarray',
       description='.',
       long_description=open('README.md').read(),
       install_requires=[
-          "numpy      >= 1.7.0",
-          "leveldb    >= 0.192",
+          "numpy    >= 1.7.0",
+          "leveldb  >= 0.192",
+          "lmdb     >= 0.83",
       ],
       )
