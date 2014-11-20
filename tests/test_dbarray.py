@@ -57,7 +57,7 @@ class CommTestDBArray(object):
         """
         self.assertEqual(nrows, dba.nrows)
         self.assertEqual(ncols, dba.ncols)
-        self.assertEqual(dtype, dba.dtype.__name__)
+        self.assertEqual(dtype, dba.dtype.name)
 
     def _info_eq(self, dba, arr):
         """ Check if the basic information of `dba` is the same as `arr`.
@@ -78,16 +78,22 @@ class CommTestDBArray(object):
         dbpath = os.path.join(self.tempdir, self.DBTYPE, 'test_init.db')
         nrows = 100
         ncols = 1024
-        dtype = 'float32'
 
-        # create new DBArray
-        dba = self._create_dba(dbpath, (nrows, ncols), np.dtype(dtype))
-        self._check_info(dba, nrows, ncols, dtype)
+        # test different kinds of dtype
+        for dtype in ['float32', np.float32, np.dtype('float32')]:
+            # create new DBArray
+            dba = self._create_dba(dbpath, (nrows, ncols), np.dtype(dtype))
+            self._check_info(dba, nrows, ncols,
+                             dtype if type(dtype) is not type
+                             else dtype.__name__)
 
-        # cloase and re-open
-        del dba
-        dba = DBArray(dbpath, self.DBTYPE)
-        self._check_info(dba, nrows, ncols, dtype)
+            # close and re-open
+            del dba
+            dba = DBArray(dbpath, self.DBTYPE)
+            self._check_info(dba, nrows, ncols,
+                             dtype if type(dtype) is not type
+                             else dtype.__name__)
+            del dba
 
     def test_from_and_to(self):
         for key, val in self.commdbs.iteritems():

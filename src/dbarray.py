@@ -361,7 +361,7 @@ class DBArray(object):
         elif type(dtype) is type:
             return dtype.__name__
         elif type(dtype) is np.dtype:
-            return str(dtype)
+            return dtype.name
         elif type(dtype) is str:
             return str
         else:
@@ -374,7 +374,7 @@ class DBArray(object):
         if dtype_str == 'None':
             return None
         else:
-            return eval('np.' + dtype_str)
+            return np.dtype(dtype_str)
 
     def _loadinfo(self):
         """ Load information from DB
