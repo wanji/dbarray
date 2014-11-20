@@ -59,6 +59,28 @@ class StorageLevelDB(Storage):
         return self.hl_db.Get(key)
 
 
+class StorageLMDB(Storage):
+    """ Storage using LevelDB as backend.
+    """
+
+    def __init__(self, dbpath):
+        Storage.__init__(self)
+        self.hl_db = leveldb.LevelDB(dbpath, write_buffer_size=2**30)
+
+    def __del__(self):
+        del self.hl_db
+
+    def set(self, key, val):
+        """ Set `key` to `val`
+        """
+        self.hl_db.Put(key, val)
+
+    def get(self, key):
+        """ Get value of `key`
+        """
+        return self.hl_db.Get(key)
+
+
 class StorageRedis(Storage):
     """ Storage using Redis as backend.
     """
