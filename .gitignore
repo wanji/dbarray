@@ -1,0 +1,5 @@
+wiki
+doc
+*.pyc
+*.swp
+.ropeproject

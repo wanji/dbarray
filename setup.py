@@ -14,7 +14,7 @@ except ImportError:
     from distutils.core import setup
 
 setup(name='dbarray',
-      version='0.1',
+      version='0.1.1',
       author='WAN Ji',
       author_email='wanji@live.com',
       package_dir={'dbarray': 'src'},
