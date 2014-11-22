@@ -76,13 +76,23 @@ class StorageLevelDB(Storage):
 class StorageLMDB(Storage):
     """ Storage using LevelDB as backend.
     """
+    DB_MAP = {}
 
     def __init__(self, dbpath, map_size=2**40):
         Storage.__init__(self)
-        self.env = lmdb.open(dbpath, map_size=map_size, sync=False)
+        abspath = os.path.abspath(dbpath)
+        if abspath not in StorageLMDB.DB_MAP:
+            StorageLMDB.DB_MAP[abspath] = \
+                lmdb.open(dbpath, map_size=map_size, sync=False)
+        try:
+            StorageLMDB.DB_MAP[abspath].stat()
+        except lmdb.Error:
+            StorageLMDB.DB_MAP[abspath] = \
+                lmdb.open(dbpath, map_size=map_size, sync=False)
+        self.env = StorageLMDB.DB_MAP[abspath]
 
     def __del__(self):
-        del self.env
+        pass
 
     def set(self, key, val):
         """ Set `key` to `val`

@@ -21,6 +21,7 @@ import tempfile
 
 import numpy as np
 import numpy.random as nr
+import lmdb
 from dbarray import DBArray
 
 
@@ -236,6 +237,43 @@ class TestDBArray_LMDB(unittest.TestCase, CommTestDBArray):
     @classmethod
     def tearDownClass(cls):
         os.system('rm -r %s' % cls.tempdir)
+
+    def test_multi_handle(self):
+        """ Test the case of open multiple handle for the same database.
+
+        This test is for:
+            https://github.com/wanji/dbarray/issues/1
+        """
+        dbpath = os.path.join(self.tempdir, self.DBTYPE,
+                              'test_multi_handle.db')
+        for idx in range(2):
+            # Create random array
+            nrows = 1
+            ncols = 5
+            dtype = np.float32
+            arr = np.random.random((nrows, ncols))
+            arr = np.require(arr, dtype)
+
+            """ `DBArray` from scratch
+            """
+            # Create `DBArray`
+            dba1 = DBArray(dbpath)
+            # Initialize
+            dba1.set_shape((nrows, ncols))
+            dba1.set_dtype(dtype)
+            # Set rows
+            dba1[:] = arr[:]
+            # Convert to ndarray
+            dba1.tondarray()
+
+            """ Open exsiting `DBArray`
+            """
+            # Open another DB
+            dba2 = DBArray(dbpath)
+            dba2.tondarray()
+            # Check if a error rises while accessing closed db
+            dba1._storage.env.close()
+            self.assertRaises(lmdb.Error, dba2.tondarray)
 
 
 if __name__ == '__main__':
