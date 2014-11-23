@@ -7,7 +7,7 @@ array which can not be loaded into memory.
 
 ## Example
 
-```
+```python
 import numpy as np
 from dbarray import DBArray
 
@@ -17,6 +17,7 @@ ncols = 8
 dtype = np.float32
 arr = np.random.random((nrows, ncols))
 arr = np.require(arr, dtype)
+print arr
 
 """ `DBArray` from scratch
 """
@@ -32,7 +33,6 @@ for i in range(nrows):
 
 # Convert to ndarray
 print dba1.tondarray()
-print arr
 
 """ `DBArray` from `ndarray`
 """
@@ -44,5 +44,4 @@ print dba2.nrows, dba2.ncols, dba2.dtype
 
 # Convert to ndarray
 print dba2.tondarray()
-print arr
 ```
