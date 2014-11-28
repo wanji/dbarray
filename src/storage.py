@@ -17,6 +17,7 @@ The backend storage engine of DBArray
 import os
 import leveldb
 import lmdb
+import logging
 
 
 class Storage(object):
@@ -103,8 +104,14 @@ class StorageLMDB(Storage):
     def get(self, key):
         """ Get value of `key`
         """
-        with self.env.begin() as txt:
-            val = txt.get(key)
+        loop = True
+        while loop:
+            try:
+                with self.env.begin() as txt:
+                    val = txt.get(key)
+                loop = False
+            except lmdb.BadRSlotError as err:
+                logging.warning(err.message)
         return val
 
     @classmethod
